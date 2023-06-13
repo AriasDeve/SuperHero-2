@@ -1,0 +1,208 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Superghero</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="index.html">
+        <img src="./img/rocket.png" 
+        alt="Logo" 
+        width="65" 
+        height="58" 
+        class="d-inline-block align-text-top">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="./view/filtros.html">
+              <img src="./img/groot.png" 
+              alt="Logo" 
+              width="65"
+              height="58"
+              class="d-inline-block align-text-top"></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./view/grafico-bandos.html">
+              <img src="./img/yondu.png" 
+              alt="Logo" 
+              width="65"
+              height="58" 
+              class="d-inline-block align-text-top">
+              
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="./view/grafico-demo.html">
+              <img src="./img/drax.png" 
+              alt="Logo" 
+              width="65"
+              height="58"  
+              class="d-inline-block align-text-top"></a>
+          </li>   
+          <li class="nav-item">
+            <a class="nav-link" href="./view/grafico-update.html">
+              <img src="./img/starlord.png" 
+              alt="Logo" 
+              width="65"
+              height="58"  
+              class="d-inline-block align-text-top"></a>
+          </li>      
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <!-- FORMULARIO -->
+    <div class="row mt-3 mb-3">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header bg-info text-light">
+            Filtra tus super héroes
+          </div>
+          <div class="card-body">
+            <div class="row">
+              <div class="col-md-12 mb-3">
+                <select name="publishers" id="publishers" class="form-select">
+                  <option value="">Seleccione</option>
+                </select>
+              </div>              
+              <div class="col-md-2 mt-3">
+                <div class="d-grid">
+                  <button id="exportar" class="btn btn-danger btn-sm" type="button">Exportar PDF</button>
+                </div>
+                <div class="col-md-2 mt-3">
+                  <a class="btn btn-dark mb-4" href="view/filtros.html">Filtro</a>
+                  <div class="d-grid">
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>                   
+        </div>
+      </div>
+    </div>
+    <!-- TABLA -->
+    <div class="row">
+      <div class="col-md-12">
+        <table id="table-superhero" class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>
+              <th>Full Name</th>
+              <th>Gender</th>
+              <th>Eye Colour</th>              
+              <th>Hair Colour</th>
+              <th>Skin Colour</th>
+              <th>Race</th>
+              <th>Publisher</th>
+              <th>Alignment</th>
+              <th>height</th>
+              <th>weight</th>
+            </tr>
+
+          </thead>
+          <tbody>
+            <!-- asíncrono -->
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () =>{
+
+      const exportarPDF = document.querySelector("#exportar");
+      const tabla = document.querySelector("#table-superhero");
+      const cuerpoTabla = tabla.querySelector("tbody");  
+      const lista = document.querySelector("#publishers");
+
+
+      function obtenerPublisher(){
+        const parametros = new URLSearchParams();
+        parametros.append("operacion", "listar");
+
+        fetch('./controllers/publishers.controller.php',{
+          method: 'POST',
+          body: parametros
+        })
+          .then(respuesta => respuesta.json())
+          .then(datos => {
+             datos.forEach(element => {
+              const optiontag = document.createElement("option");
+              optiontag.value = element.id;
+              optiontag.text = element.publisher_name;
+              lista.appendChild(optiontag);
+            }); 
+            
+          });
+      }
+
+      function obtenerSuperHero(){
+        const parametros = new URLSearchParams();
+      
+        parametros.append("operacion", "listar");
+        parametros.append("publisher_id", parseInt(lista.value));
+        fetch('./controllers/superhero.php', {
+          method: 'POST',
+          body: parametros
+        })
+          .then(respuesta => respuesta.json())
+          .then(datos=>{
+            cuerpoTabla.innerHTML = ``;
+            datos.forEach(element =>{
+              const fila = `
+              <tr>
+                <td>${element.id}</td>
+                <td>${element.superhero_name}</td>
+                <td>${element.full_name}</td>
+                <td>${element.gender}</td>
+                <td>${element.eye_colour}</td>
+                <td>${element.hair_colour}</td>
+                <td>${element.skin_colour}</td>
+                <td>${element.race}</td>
+                <td>${element.publisher_name}</td>
+                <td>${element.alignment}</td>
+                <td>${element.height_cm}</td>
+                <td>${element.weight_kg}</td>
+              </tr>
+              `;
+              cuerpoTabla.innerHTML +=fila;
+            });
+          });
+      }
+
+      function generarPDF(){
+        const parametros  = new URLSearchParams();
+        parametros.append("publisher_id", parseInt(lista.value));
+        parametros.append("titulo", lista.options[lista.selectedIndex].text);
+        window.open(`./reports/superhero.report.php?${parametros}`, `_blank`)
+      }
+      
+      
+
+      //eventos
+      lista.addEventListener("change", obtenerSuperHero);
+
+      exportarPDF.addEventListener("click", generarPDF)
+      obtenerPublisher(); 
+      obtenerRace();
+      obtenerGender();
+      obtenerAlignment();
+    })
+  </script>
+
+</body>
+</html>

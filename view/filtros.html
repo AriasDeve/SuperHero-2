@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC" crossorigin="anonymous">
+</head>
+<body>
+  <nav class="navbar navbar-expand-lg bg-light">
+    <div class="container-fluid">
+      <a class="navbar-brand" href="../index.html">
+        <img src="../img/rocket.png" 
+        alt="Logo" 
+        width="65"
+        height="58" 
+        class="d-inline-block align-text-top">
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="navbarNav">
+        <ul class="navbar-nav">
+          <li class="nav-item">
+            <a class="nav-link active" aria-current="page" href="filtros.html">
+              <img src="../img/groot.png" 
+              alt="Logo" 
+              width="65"
+              height="58" 
+              class="d-inline-block align-text-top"></a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="grafico-bandos.html">
+              <img src="../img/yondu.png" 
+              alt="Logo" 
+              width="65"
+              height="58" 
+              class="d-inline-block align-text-top">
+              
+            </a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="grafico-demo.html">
+              <img src="../img/drax.png" 
+              alt="Logo" 
+              width="65"
+              height="58"  
+              class="d-inline-block align-text-top"></a>
+          </li>   
+          <li class="nav-item">
+            <a class="nav-link" href="grafico-update.html">
+              <img src="../img/starlord.png" 
+              alt="Logo" 
+              width="65"
+              height="58"  
+              class="d-inline-block align-text-top"></a>
+          </li>      
+        </ul>
+      </div>
+    </div>
+  </nav>
+  <div class="container">
+    <!-- FORMULARIO -->
+    <div class="row mt-3 mb-3">
+      <div class="col-md-12">
+        <div class="card">
+          <div class="card-header bg-dark text-light">
+            Filtra mas tus super héroes
+          </div>
+          <div class="card-body">
+            <div class="row">              
+              <div class="col-md-4">
+                <select name="raza" id="raza" class="form-select">
+                  <option value="">Raza</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <select name="genero" id="genero" class="form-select">
+                  <option value="">Genero</option>
+                </select>
+              </div>
+              <div class="col-md-4">
+                <select name="bando" id="bando" class="form-select">
+                  <option value="">Bando</option>
+                </select>
+              </div>
+              <div class="col-md-6 mt-3">
+                <div class="d-grid">
+                  <button id="filtrar" class="btn btn-dark btn-sm" type="button">Filtro Plus</button>
+                </div>
+              </div>
+              <div class="col-md-6 mt-3">
+                <div class="d-grid">
+                  <button id="exportar" class="btn btn-dark btn-sm" type="button">Exportar PDF</button>
+                </div>
+              </div>
+            </div>
+          </div>                   
+        </div>
+      </div>
+    </div>
+    <!-- TABLA -->
+    <div class="row">
+      <div class="col-md-12">
+        <table id="table-superherofilter" class="table table-sm table-striped">
+          <thead>
+            <tr>
+              <th>ID</th>
+              <th>Name</th>              
+              <th>Hair Colour</th>
+              <th>Publisher</th>
+              <th>weight</th>
+             
+            </tr>
+
+          </thead>
+          <tbody>
+            <!-- asíncrono -->
+
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", () =>{
+
+      const filter = document.querySelector("#filtrar");
+      const exportar = document.querySelector("#exportar")
+      const cuerpoTabla = document.querySelector("#table-superherofilter tbody");
+      const listaRaza = document.querySelector("#raza");
+      const listaGender = document.querySelector("#genero");
+      const listaAlignment = document.querySelector("#bando");
+      
+      function getSelectData(operacion = "", objectSelect){
+        const parametros = new URLSearchParams();
+        parametros.append("operacion", operacion);        
+        fetch('../controllers/SuperHeroFilter.controller.php',{
+          method: 'POST',
+          body: parametros
+        })
+          .then(respuesta=>respuesta.json())
+          .then(datos=> {
+            datos.forEach(element =>{
+              const optiontag = document.createElement("option");
+              optiontag.value = element[0];
+              optiontag.text = element[1];
+              objectSelect.appendChild(optiontag);
+            });
+          });
+      }
+  
+      function obtenerSuperHeroplus(){
+        const parametros = new URLSearchParams();
+        parametros.append("operacion", "filtrar");
+        parametros.append("race_id", parseInt(listaRaza.value));
+        parametros.append("gender_id", parseInt(listaGender.value));
+        parametros.append("alignment_id", parseInt(listaAlignment.value));
+        fetch('../controllers/listar.php', {
+          method: 'POST',
+          body: parametros
+        })
+          .then(respuesta => respuesta.json())
+          .then(datos=>{
+            cuerpoTabla.innerHTML = ``;
+            datos.forEach(element =>{
+              const fila = `
+              <tr>
+                <td>${element.id}</td>
+                <td>${element.superhero_name}</td>              
+                <td>${element.hair_colour}</td>
+                <td>${element.publisher_name}</td>
+                <td>${element.weight_kg}</td>
+              </tr>
+              `;
+              cuerpoTabla.innerHTML +=fila;
+            });
+          })
+          .catch(error => { 
+            cuerpoTabla.innerHTML = ``;
+            alert('No se encontro nada');
+          });
+      }
+
+      function generarPDF(){
+        const parametros  = new URLSearchParams();       
+        parametros.append("race_id", parseInt(listaRaza.value)) ;
+        parametros.append("gender_id", parseInt(listaGender.value)) ;
+        parametros.append("alignment_id", parseInt(listaAlignment.value)) ;
+        parametros.append("race", listaRaza.options[listaRaza.selectedIndex].text);
+        parametros.append("gender", listaGender.options[listaGender.selectedIndex].text);
+        parametros.append("alignment", listaAlignment.options[listaAlignment.selectedIndex].text);
+        window.open(`../reports/reportsfilter/superhero.report.php?${parametros}`, `_blank`)
+      }
+      filter.addEventListener("click",obtenerSuperHeroplus)
+      exportar.addEventListener("click",generarPDF)    
+      getSelectData("listarGeneros", listaGender);
+      getSelectData("listarRazas", listaRaza);
+      getSelectData("listarBandos", listaAlignment);
+    })
+  </script>
+</body>
+</html>

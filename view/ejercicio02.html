@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+</head>
+<body>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8">
+        <canvas id="grafico"></canvas>
+      </div>
+    </div>
+  </div>
+  
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", ()=>{
+      const lienzo = document.getElementById("grafico");
+
+    
+
+      function EyeColour(){
+        const parametros = new URLSearchParams();
+        parametros.append("operacion", "listarAlignment");
+        fetch("../controllers/Ejercicio.controller.php",{
+          method:  'POST',
+          body: parametros
+        })
+          .then((response) => response.json())
+          .then((datos)=>{ 
+            console.log(datos);
+            const resultado = {};
+            for (const dato of datos){
+              const {colour, amount} = dato;
+                if (colour in resultado) {
+                  resultado[colour].push(dato);
+              }else{
+                resultado[colour] = [dato];
+              }
+            }         
+            const marvel = Object.values(resultado).map(element=>{
+              const filterColour= element.find(color=>color.publisher_name=="Marvel Comics")
+              if (filterColour){
+                return filterColour.amount
+              }else{
+                return 0 
+              }
+            })
+            const dc = Object.values(resultado).map(element=>{
+              const filterColour= element.find(color=>color.publisher_name=="DC Comics")
+              if (filterColour){
+                return filterColour.amount
+              }else{
+                return 0 
+              }
+            })
+
+            const colours = datos.map((obj)=> obj.colour);
+            const fase= [...new Set(colours)];
+            graficoBarras = new Chart(lienzo,{
+              type: "bar",
+              data: {
+                labels: fase,
+                datasets: [
+                  {
+                    backgroundColor: ["#2E86C1"],
+                    label: "MARVEL COMICS",
+                    data: marvel,
+                  },
+                  {
+                    backgroundColor: ["#FF0000"],
+                    label: "DC COMICS",
+                    data: dc,
+                  } 
+                ]
+              }
+            })
+
+          })
+      }
+      EyeColour();
+    })
+  </script>
+</body>
+</html>
